@@ -10,6 +10,11 @@ spring:
     username: postgres
     password: Admin@123456
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 management:
   endpoints:
     web:
@@ -19,11 +24,12 @@ management:
           - info
           - metrics
           - prometheus
-
+          - gateway
   endpoint:
+    gateway:
+      access: read-only
     health:
       show-details: always
-
   metrics:
     tags:
       application: api-gateway
