@@ -1,13 +1,18 @@
 package com.net.api_gateway.controller;
 
+import com.net.api_gateway.dto.ApiResponse;
 import com.net.api_gateway.dto.GatewayRouteRequest;
 import com.net.api_gateway.dto.GatewayRouteResponse;
 import com.net.api_gateway.monitoring.GatewayMetrics;
+import com.net.api_gateway.service.ApiResponseService;
 import com.net.api_gateway.service.GatewayRouteService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/gateway/routes")
@@ -15,16 +20,25 @@ public class GatewayRouteController {
 
     private final GatewayRouteService service;
     private final GatewayMetrics metrics;
+    private final ApiResponseService apiResponseService;
 
-    public GatewayRouteController(GatewayRouteService service, GatewayMetrics metrics) {
+    public GatewayRouteController(GatewayRouteService service, GatewayMetrics metrics,ApiResponseService apiResponseService) {
         this.service = service;
         this.metrics = metrics;
+        this.apiResponseService = apiResponseService;
     }
 
     @GetMapping
-    public Flux<GatewayRouteResponse> getAll() {
+    public  Mono<ResponseEntity<ApiResponse<List<GatewayRouteResponse>>>> getAll(ServerWebExchange exchange) {
         metrics.incrementGetAll();
-        return service.getAll();
+        return service.getAll().collectList()
+                .map(data ->
+                        apiResponseService.success(
+                                exchange,
+                                "Gateway routes retrieved successfully.",
+                                data
+                        )
+                );
     }
 
     @GetMapping("/{id}")

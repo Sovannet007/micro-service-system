@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Table("gateway_rate_limit_policies")
-public class GatewayRateLimitPolicy {
+@Table("gateway_rate_limit_rules")
+public class GatewayRateLimitRule {
 
     @Id
     private Long id;
@@ -19,8 +19,17 @@ public class GatewayRateLimitPolicy {
     @Column("gateway_route_id")
     private Long gatewayRouteId;
 
-    @Column("policy_version")
-    private Integer policyVersion;
+    @Column("rule_name")
+    private String ruleName;
+
+    @Column("path_pattern")
+    private String pathPattern;
+
+    @Column("http_method")
+    private String httpMethod;
+
+    @Column("rule_version")
+    private Integer ruleVersion;
 
     @Column("is_active")
     private Boolean isActive;
@@ -42,6 +51,9 @@ public class GatewayRateLimitPolicy {
 
     @Column("block_duration_seconds")
     private Integer blockDurationSeconds;
+
+    @Column("rule_order")
+    private Integer ruleOrder;
 
     @Column("change_note")
     private String changeNote;
