@@ -1,16 +1,23 @@
 package com.net.api_gateway.service;
 
 import com.net.api_gateway.dto.ApiResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+import tools.jackson.databind.ObjectMapper;
+
 import java.time.Instant;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class ApiResponseService {
-
+    private final ObjectMapper objectMapper;
     public <T> ResponseEntity<ApiResponse<T>> success(ServerWebExchange exchange,T data) {
         return success(
                 exchange,
@@ -161,6 +168,60 @@ public class ApiResponseService {
         return ResponseEntity
                 .status(status)
                 .body(response);
+    }
+
+    public Mono<Void> writeError(
+            ServerWebExchange exchange,
+            HttpStatus status,
+            String code,
+            String message,
+            Map<String, Object> details) {
+
+        ApiResponse<Void> body =
+                new ApiResponse<>(
+                        false,
+                        status.value(),
+                        code,
+                        message,
+                        null,
+                        details,
+                        exchange.getRequest()
+                                .getURI()
+                                .getPath(),
+                        exchange.getRequest()
+                                .getId(),
+                        Instant.now()
+                );
+
+        try {
+
+            byte[] bytes =
+                    objectMapper.writeValueAsBytes(body);
+
+            exchange.getResponse()
+                    .setStatusCode(status);
+
+            exchange.getResponse()
+                    .getHeaders()
+                    .setContentType(
+                                MediaType.APPLICATION_JSON
+                    );
+
+            DataBuffer buffer =
+                    exchange.getResponse()
+                            .bufferFactory()
+                            .wrap(bytes);
+
+            return exchange
+                    .getResponse()
+                    .writeWith(
+                            Mono.just(buffer)
+                    );
+
+        } catch (Exception exception) {
+
+            return Mono.error(exception);
+        }
     }
 
     private <T> ApiResponse<T> build(
