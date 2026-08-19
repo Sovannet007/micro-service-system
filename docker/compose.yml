@@ -52,7 +52,21 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.1
+    container_name: gateway-keycloak
+    command:
+      - start-dev
+    ports:
+      - "8180:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: Admin@123456
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+
 volumes:
   gateway_db_data:
   grafana_data:
   redisinsight_data:
+  keycloak_data:
