@@ -1,9 +1,8 @@
 package com.net.api_gateway.service;
-
-
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.net.api_gateway.config.KeycloakConfig;
 
+import com.net.api_gateway.dto.SessionResponse;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.MediaType;
@@ -17,6 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 
 
 @Service
@@ -30,6 +30,134 @@ public class KeycloakAdminService {
     private final WebClient webClient =
             WebClient.builder().build();
 
+
+
+    public Mono<List<SessionResponse>> getUserSessions(
+            String userId
+    ){
+
+        return getAdminToken()
+
+                .flatMapMany(token ->
+
+                        webClient.get()
+
+                                .uri(
+                                        config.getServerUrl()
+                                                +"/admin/realms/"
+                                                +config.getRealm()
+                                                +"/users/"
+                                                +userId
+                                                +"/sessions"
+                                )
+
+                                .headers(h ->
+                                        h.setBearerAuth(token)
+                                )
+
+                                .retrieve()
+
+                                .bodyToFlux(JsonNode.class)
+
+                )
+
+                .map(json -> {
+
+
+                    SessionResponse session =
+                            new SessionResponse();
+
+
+                    session.setId(
+                            json.get("id").asText()
+                    );
+
+
+                    session.setIpAddress(
+                            json.get("ipAddress").asText()
+                    );
+
+
+                    session.setStarted(
+                            json.get("start").asLong()
+                    );
+
+
+                    session.setLastAccess(
+                            json.get("lastAccess").asLong()
+                    );
+
+
+                    return session;
+
+                })
+
+                .collectList();
+
+    }
+
+    public Mono<Void> logoutSession(
+            String sessionId
+    ){
+
+        return getAdminToken()
+
+                .flatMap(token ->
+
+
+                        webClient.delete()
+
+                                .uri(
+                                        config.getServerUrl()
+                                                +"/admin/realms/"
+                                                +config.getRealm()
+                                                +"/sessions/"
+                                                +sessionId
+                                )
+
+                                .headers(h ->
+                                        h.setBearerAuth(token)
+                                )
+
+                                .retrieve()
+
+                                .bodyToMono(Void.class)
+
+                );
+
+    }
+
+    public Mono<Void> logoutAll(
+            String userId
+    ){
+
+        return getAdminToken()
+
+                .flatMap(token ->
+
+
+                        webClient.post()
+
+                                .uri(
+                                        config.getServerUrl()
+                                                +"/admin/realms/"
+                                                +config.getRealm()
+                                                +"/users/"
+                                                +userId
+                                                +"/logout"
+                                )
+
+                                .headers(h ->
+                                        h.setBearerAuth(token)
+                                )
+
+                                .retrieve()
+
+                                .bodyToMono(Void.class)
+
+                );
+
+    }
 
 
     private Mono<String> getAdminToken(){
@@ -85,5 +213,7 @@ public class KeycloakAdminService {
                 );
 
     }
+
+
 
 }

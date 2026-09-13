@@ -17,14 +17,12 @@ import reactor.core.publisher.Mono;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
-import java.util.UUID;
 
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class GlobalExceptionHandler
-        implements WebExceptionHandler {
+public class GlobalExceptionHandler implements WebExceptionHandler {
 
 
     private final ObjectMapper objectMapper;
