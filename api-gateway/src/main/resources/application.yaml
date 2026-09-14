@@ -1,34 +1,33 @@
 server:
-  port: ${PORT:8080}
+  port: 8080
+  address: 0.0.0.0
 spring:
   application:
     name: api-gateway
 
   r2dbc:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
+    url: r2dbc:postgresql://localhost:54033/gateway_db
+    username: postgres
+    password: Admin@123456
 
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD}
+      host: localhost
+      port: 6379
 
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER}
+          issuer-uri: http://localhost:8180/realms/gateway-management
 
 keycloak:
-  server-url: ${KEYCLOAK_SERVER_URL}
-  realm: ${KEYCLOAK_REALM}
-  client-id: ${KEYCLOAK_CLIENT_ID}
-  client-secret: ${KEYCLOAK_CLIENT_SECRET}
-
-  admin-client-id: ${KEYCLOAK_ADMIN_CLIENT_ID}
-  admin-client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET}
+  server-url: http://localhost:8180
+  realm: gateway-management
+  client-id: api-gateway-management
+  client-secret: WTRRCNQ4Uwsk37OHO3WunZk7eO2yq2Vpnw90UbRVNVtyPMdwBu6ic2ON0RmYFBKi6aBtQmJV2nSTGoQcPblYdV
+  admin-client-id: gateway-admin-service
+  admin-client-secret: tMocpXqApK4FtJZyNaQdBUc2WmFBy32kLUC7LSu8DbvRdzyoWkXwAMd73eXA87vMRSTYYTkQv8zORcYcU7g82b
 
 management:
   endpoints:

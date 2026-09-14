@@ -28,6 +28,16 @@ public class SecurityConfig {
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .authorizeExchange(auth -> auth
+
+                        // Monitoring endpoints
+                        .pathMatchers(
+                                "/actuator/prometheus",
+                                "/actuator/health",
+                                "/actuator/info"
+                        )
+                        .permitAll()
+
+
                         // Public endpoints
                         .pathMatchers(
                                 "/api/auth/login",
@@ -35,24 +45,35 @@ public class SecurityConfig {
                                 "/api/auth/refresh"
                         )
                         .permitAll()
+
+
                         // User logout
                         .pathMatchers("/api/auth/logout")
                         .authenticated()
+
+
                         // Admin session management
                         .pathMatchers(
                                 "/api/auth/sessions/**",
                                 "/api/auth/logout-all/**"
                         )
                         .hasRole("GATEWAY_ADMIN")
+
+
                         // Gateway admin
                         .pathMatchers("/api/gateway/**")
                         .hasRole("GATEWAY_ADMIN")
+
+
                         .pathMatchers("/actuator/gateway/**")
                         .hasRole("GATEWAY_ADMIN")
+
+
                         // Current user
                         .pathMatchers("/api/auth/me")
                         .authenticated()
-                        // Everything else
+
+
                         .anyExchange()
                         .authenticated()
                 )
