@@ -2,6 +2,7 @@ package com.net.api_gateway.service;
 
 import com.net.api_gateway.config.KeycloakConfig;
 import com.net.api_gateway.dto.LoginResponse;
+import com.net.api_gateway.dto.SessionDeviceInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -9,16 +10,19 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
 public class KeycloakAuthService {
-    private final KeycloakConfig config;
 
+    private final KeycloakConfig config;
+    private  final DeviceTrackingService deviceTrackingService;
     private final WebClient webClient = WebClient.builder().build();
 
-    public Mono<LoginResponse> login(String username, String password){
+    public Mono<LoginResponse> login(String username, String password, ServerWebExchange exchange){
+        SessionDeviceInfo deviceInfo = deviceTrackingService.extract(exchange);
         String url = config.getServerUrl() +"/realms/" +config.getRealm() +"/protocol/openid-connect/token";
         MultiValueMap<String,String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "password");
