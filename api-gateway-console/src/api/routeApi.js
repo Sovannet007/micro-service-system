@@ -5,17 +5,10 @@ let mockRoutes = [...initialRoutes];
 
 export const routeApi = {
   getRoutes: async () => {
-    if (import.meta.env.VITE_USE_MOCK !== "false") {
-      return { success: true, status: 200, code: "SUCCESS", data: mockRoutes };
-    }
     return apiClient.get("/api/gateway/routes");
   },
 
   getRouteById: async (id) => {
-    if (import.meta.env.VITE_USE_MOCK !== "false") {
-      const route = mockRoutes.find((r) => r.routeId === id);
-      return { success: true, status: 200, code: "SUCCESS", data: route };
-    }
     return apiClient.get(`/api/gateway/routes/${id}`);
   },
 

@@ -10,16 +10,14 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
+
     @Bean
     @Order(1)
-    public SecurityWebFilterChain apiSecurity(
-            ServerHttpSecurity http,
-            KeycloakClientRoleConverter roleConverter,
-            ApiResponseService apiResponseService)
-    {
+    public SecurityWebFilterChain apiSecurity(ServerHttpSecurity http, KeycloakClientRoleConverter roleConverter, ApiResponseService apiResponseService) {
         ReactiveJwtAuthenticationConverter jwtConverter = new ReactiveJwtAuthenticationConverter();
         jwtConverter.setJwtGrantedAuthoritiesConverter(roleConverter);
         jwtConverter.setPrincipalClaimName("preferred_username");
@@ -29,7 +27,7 @@ public class SecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .authorizeExchange(auth -> auth
 
-                        // Monitoring endpoints
+                        // Monitoring
                         .pathMatchers(
                                 "/actuator/prometheus",
                                 "/actuator/health",
@@ -37,8 +35,7 @@ public class SecurityConfig {
                         )
                         .permitAll()
 
-
-                        // Public endpoints
+                        // Public authentication
                         .pathMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
@@ -46,38 +43,31 @@ public class SecurityConfig {
                         )
                         .permitAll()
 
-
-                        // User logout
-                        .pathMatchers("/api/auth/logout")
-                        .authenticated()
-
-
                         // Admin session management
-                        .pathMatchers(
-                                "/api/auth/sessions/**",
-                                "/api/auth/logout-all/**"
-                        )
+                        .pathMatchers("/api/admin/sessions/**")
                         .hasRole("GATEWAY_ADMIN")
 
-
-                        // Gateway admin
+                        // Gateway management
                         .pathMatchers("/api/gateway/**")
                         .hasRole("GATEWAY_ADMIN")
-
 
                         .pathMatchers("/actuator/gateway/**")
                         .hasRole("GATEWAY_ADMIN")
 
+                        // Normal user's own sessions
+                        .pathMatchers("/api/auth/sessions/**")
+                        .authenticated()
 
                         // Current user
                         .pathMatchers("/api/auth/me")
                         .authenticated()
 
-
                         .anyExchange()
                         .authenticated()
                 )
+
                 .exceptionHandling(errors -> errors
+                        // 401
                         .authenticationEntryPoint(
                                 (exchange, exception) ->
                                         apiResponseService.writeError(
@@ -88,6 +78,8 @@ public class SecurityConfig {
                                                 null
                                         )
                         )
+
+                        // 403
                         .accessDeniedHandler(
                                 (exchange, exception) ->
                                         apiResponseService.writeError(
@@ -100,7 +92,11 @@ public class SecurityConfig {
                         )
                 )
                 .oauth2ResourceServer(oauth ->
-                        oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter))
+                        oauth.jwt(jwt ->
+                                jwt.jwtAuthenticationConverter(
+                                        jwtConverter
+                                )
+                        )
                 )
                 .build();
     }

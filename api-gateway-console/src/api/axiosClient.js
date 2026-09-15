@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Main API client
 const axiosClient = axios.create({
@@ -121,28 +120,18 @@ axiosClient.interceptors.response.use(
     // =================================================
 
     isRefreshing = true;
-
     try {
       console.log("[AUTH] Access token expired. Refreshing...");
 
       const response = await refreshClient.post("/api/auth/refresh", {
-        refresh_token: refreshToken,
+        refreshToken: refreshToken,
       });
-
       const result = response.data;
-
       if (!result.success || !result.data?.access_token) {
         throw new Error(result.message || "Token refresh failed");
       }
-
       const newAccessToken = result.data.access_token;
-
       const newRefreshToken = result.data.refresh_token;
-
-      // =================================================
-      // Save new tokens
-      // =================================================
-
       localStorage.setItem("access_token", newAccessToken);
 
       if (newRefreshToken) {
@@ -163,14 +152,10 @@ axiosClient.interceptors.response.use(
       return axiosClient(originalRequest);
     } catch (refreshError) {
       console.error("[AUTH] Refresh token failed.", refreshError);
-
       onRefreshFailed(refreshError);
-
       clearAuthentication();
-
       // Redirect to login
       window.location.href = "/login";
-
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

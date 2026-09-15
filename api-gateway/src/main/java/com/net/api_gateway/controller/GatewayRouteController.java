@@ -6,7 +6,7 @@ import com.net.api_gateway.dto.GatewayRouteResponse;
 import com.net.api_gateway.monitoring.GatewayMetrics;
 import com.net.api_gateway.service.ApiResponseService;
 import com.net.api_gateway.service.GatewayRouteService;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
@@ -16,17 +16,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/gateway/routes")
+@RequiredArgsConstructor
 public class GatewayRouteController {
 
     private final GatewayRouteService service;
     private final GatewayMetrics metrics;
     private final ApiResponseService apiResponseService;
-
-    public GatewayRouteController(GatewayRouteService service, GatewayMetrics metrics,ApiResponseService apiResponseService) {
-        this.service = service;
-        this.metrics = metrics;
-        this.apiResponseService = apiResponseService;
-    }
 
     @GetMapping
     public  Mono<ResponseEntity<ApiResponse<List<GatewayRouteResponse>>>> getAll(ServerWebExchange exchange) {

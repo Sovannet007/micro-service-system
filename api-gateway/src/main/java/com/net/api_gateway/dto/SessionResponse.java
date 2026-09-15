@@ -1,25 +1,27 @@
 package com.net.api_gateway.dto;
 
+import lombok.Getter;
+import lombok.Setter;
 
-import lombok.Data;
-
-
-@Data
+@Getter
+@Setter
 public class SessionResponse {
-
 
     private String id;
 
-
     private String ipAddress;
 
+    private long lastAccess;
 
-    private String userAgent;
+    private long started;
 
+    private String userId;
 
-    private Long started;
+    private String username;
 
+    private String deviceType;
 
-    private Long lastAccess;
+    private String platform;
 
+    private String browser;
 }

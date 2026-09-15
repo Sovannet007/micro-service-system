@@ -21,10 +21,7 @@ public class GatewayRateLimitBlockController {
     }
 
     @DeleteMapping
-    public Mono<ResponseEntity<Void>> unblock(
-            @RequestParam String routeId,
-            @RequestParam String ip) {
-
+    public Mono<ResponseEntity<Void>> unblock(@RequestParam String routeId, @RequestParam String ip) {
         return service.unblock(routeId, ip)
                 .thenReturn(ResponseEntity.noContent().build());
     }

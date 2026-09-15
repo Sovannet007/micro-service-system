@@ -3,6 +3,7 @@ import { sessionApi } from "../api/sessionApi";
 import { useToast } from "../context/ToastContext";
 import { KeyRound, ShieldAlert, RefreshCw, Trash2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { formatDateTime } from "../utils/dateTime";
 
 export default function Sessions() {
   const [sessions, setSessions] = useState([]);
@@ -14,7 +15,7 @@ export default function Sessions() {
     setLoading(true);
     try {
       const res = await sessionApi.getSessions();
-      setSessions(res.data);
+      setSessions(res.data.data);
     } catch (err) {
       addToast(err.message || "Failed to fetch active sessions", "error");
     } finally {
@@ -94,32 +95,32 @@ export default function Sessions() {
                 <th className="p-3">Device / Browser</th>
                 <th className="p-3">Platform</th>
                 <th className="p-3">IP Address</th>
+                <th className="p-3">Start Time</th>
                 <th className="p-3">Last Activity</th>
-                <th className="p-3">Status</th>
                 <th className="p-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {sessions.map((s) => (
-                <tr key={s.sessionId} className="hover:bg-slate-50/80">
+                <tr key={s.id} className="hover:bg-slate-50/80">
                   <td className="p-3 font-bold text-slate-800">{s.username}</td>
-                  <td className="p-3 font-mono text-slate-500">
-                    {s.sessionId}
+                  <td className="p-3 font-mono text-slate-500">{s.id}</td>
+                  <td className="p-3 text-slate-700">
+                    {s.deviceType}/{s.browser}
                   </td>
-                  <td className="p-3 text-slate-700">{s.device}</td>
                   <td className="p-3 text-slate-600">{s.platform}</td>
                   <td className="p-3 font-mono text-slate-700">
                     {s.ipAddress}
                   </td>
-                  <td className="p-3 text-slate-500">{s.lastActivity}</td>
-                  <td className="p-3">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      {s.status}
-                    </span>
+                  <td className="p-3 text-slate-500">
+                    {formatDateTime(s.started)}
+                  </td>
+                  <td className="p-3 text-slate-500">
+                    {formatDateTime(s.lastAccess)}
                   </td>
                   <td className="p-3 text-right">
                     <button
-                      onClick={() => handleRevoke(s.sessionId)}
+                      onClick={() => handleRevoke(s.id)}
                       className="px-2.5 py-1 bg-red-50 text-red-700 border border-red-200 rounded text-[11px] font-medium hover:bg-red-100"
                     >
                       Revoke Session

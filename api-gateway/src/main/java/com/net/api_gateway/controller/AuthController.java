@@ -2,7 +2,7 @@ package com.net.api_gateway.controller;
 
 import com.net.api_gateway.dto.*;
 import com.net.api_gateway.service.ApiResponseService;
-import com.net.api_gateway.service.KeycloakAuthService;
+import com.net.api_gateway.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -21,7 +21,7 @@ import java.util.List;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final KeycloakAuthService authService;
+    private final AuthService authService;
     private final ApiResponseService apiResponseService;
 
     @GetMapping("/me")
@@ -54,7 +54,7 @@ public class AuthController {
     @PostMapping("/login")
     public Mono<ResponseEntity<ApiResponse<LoginResponse>>> login(ServerWebExchange exchange, @RequestBody LoginRequest request){
         return authService
-                .login(request.getUsername(), request.getPassword())
+                .login(request.getUsername(), request.getPassword(),exchange)
                 .map(data ->
                         apiResponseService.success(
                                 exchange,
@@ -83,7 +83,6 @@ public class AuthController {
         return authService
                 .logout(request.getRefreshToken())
                 .thenReturn(
-
                         apiResponseService.success(
                                 exchange,
                                 "Logout successfully.",

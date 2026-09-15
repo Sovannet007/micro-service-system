@@ -1,0 +1,5 @@
+client-secret: WTRRCNQ4Uwsk37OHO3WunZk7eO2yq2Vpnw90UbRVNVtyPMdwBu6ic2ON0RmYFBKi6aBtQmJV2nSTGoQcPblYdV (Labtop)
+client-secret: lMokPC2fpSD7RUIHl6zNCNa12EHWDUIHZqvwN8itPOqzRT19N7GTmGlXWN3OfSFLLQ5AO3svznHykj9FDgdK0Z (PC)
+
+admin-client-secret: tMocpXqApK4FtJZyNaQdBUc2WmFBy32kLUC7LSu8DbvRdzyoWkXwAMd73eXA87vMRSTYYTkQv8zORcYcU7g82b (Labtop)
+admin-client-secret: L5uis6Mou3rVFURVFcCdhtAOPeKvJlUiB6WW7QEI9uGN1NMxUJC0QseihhW46ssctGXFlGy1BwENN8sxZ4gDU4 (PC)

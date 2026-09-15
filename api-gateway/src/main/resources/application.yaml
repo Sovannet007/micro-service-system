@@ -6,7 +6,7 @@ spring:
     name: api-gateway
 
   r2dbc:
-    url: r2dbc:postgresql://localhost:5433/gateway_db
+    url: r2dbc:postgresql://localhost:5433/postgres
     username: postgres
     password: Admin@123456
 
@@ -25,9 +25,9 @@ keycloak:
   server-url: http://localhost:8180
   realm: gateway-management
   client-id: api-gateway-management
-  client-secret: WTRRCNQ4Uwsk37OHO3WunZk7eO2yq2Vpnw90UbRVNVtyPMdwBu6ic2ON0RmYFBKi6aBtQmJV2nSTGoQcPblYdV
+  client-secret: lMokPC2fpSD7RUIHl6zNCNa12EHWDUIHZqvwN8itPOqzRT19N7GTmGlXWN3OfSFLLQ5AO3svznHykj9FDgdK0Z
   admin-client-id: gateway-admin-service
-  admin-client-secret: tMocpXqApK4FtJZyNaQdBUc2WmFBy32kLUC7LSu8DbvRdzyoWkXwAMd73eXA87vMRSTYYTkQv8zORcYcU7g82b
+  admin-client-secret: L5uis6Mou3rVFURVFcCdhtAOPeKvJlUiB6WW7QEI9uGN1NMxUJC0QseihhW46ssctGXFlGy1BwENN8sxZ4gDU4
 
 management:
   endpoints:

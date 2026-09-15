@@ -21,10 +21,7 @@ public class GatewayRateLimitRuleController {
     private final ApiResponseService apiResponseService;
 
     @PostMapping
-    public Mono<ResponseEntity<ApiResponse<GatewayRateLimitRuleResponse>>> save(
-            @RequestBody GatewayRateLimitRuleRequest request,
-            ServerWebExchange exchange
-    ) {
+    public Mono<ResponseEntity<ApiResponse<GatewayRateLimitRuleResponse>>> save(@RequestBody GatewayRateLimitRuleRequest request, ServerWebExchange exchange) {
         return service.save(request)
                 .map(data ->
                         apiResponseService.created(
@@ -71,10 +68,7 @@ public class GatewayRateLimitRuleController {
     }
 
     @DeleteMapping("/{id}/active")
-    public Mono<ResponseEntity<ApiResponse<Object>>> disable(
-            @PathVariable Long id,
-            ServerWebExchange exchange
-    ) {
+    public Mono<ResponseEntity<ApiResponse<Object>>> disable(@PathVariable Long id, ServerWebExchange exchange) {
         return service.disable(id)
                 .thenReturn(
                         apiResponseService.success(
