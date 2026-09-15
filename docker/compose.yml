@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: Admin@123456
       POSTGRES_DB: gateway_db
     ports:
-      - "54033:5432"
+      - "5433:5432"
     volumes:
       - gateway_db_data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { rateLimitApi } from "../api/rateLimitApi";
 import { useToast } from "../context/ToastContext";
-import { ArrowLeft, History, Shield, CheckCircle } from "lucide-react";
+import { ArrowLeft, History, Shield } from "lucide-react";
 
 export default function RateLimitRouteDetail() {
   const { routeId } = useParams();

@@ -8,13 +8,19 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user_info");
-    if (savedUser) {
+
+    const accessToken = localStorage.getItem("access_token");
+
+    if (savedUser && accessToken) {
       try {
         setUser(JSON.parse(savedUser));
-      } catch (e) {
+      } catch (error) {
         localStorage.removeItem("user_info");
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
       }
     }
+
     setLoading(false);
   }, []);
 
@@ -24,14 +30,26 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     localStorage.removeItem("user_info");
+
     setUser(null);
   };
 
-  const hasRole = (role) => user?.roles?.includes(role);
+  const hasRole = (role) => {
+    return user?.roles?.includes(role) ?? false;
+  };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, hasRole, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        hasRole,
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus,
@@ -31,7 +31,7 @@ export default function RoutesList() {
 
     try {
       const res = await routeApi.getRoutes();
-      setRoutes(res.data || []);
+      setRoutes(res.data.data || []);
     } catch (err) {
       addToast(err.message || "Failed to fetch routes", "error");
     } finally {
@@ -59,7 +59,7 @@ export default function RoutesList() {
     }
   };
 
-  const filteredRoutes = routes.filter((route) => {
+  const filteredRoutes = routes?.filter((route) => {
     const keyword = search.toLowerCase();
 
     return (
@@ -322,7 +322,7 @@ export default function RoutesList() {
                       "
                       >
                         <button
-                          onClick={() => navigate(`/routes/${route.routeId}`)}
+                          onClick={() => navigate(`/routes/${route.id}`)}
                           className="
                             flex items-center gap-1.5
                             px-2.5 py-1.5

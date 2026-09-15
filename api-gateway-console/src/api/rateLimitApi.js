@@ -1,4 +1,4 @@
-import { axiosClient } from "./axiosClient";
+import apiClient from "./axiosClient";
 import { initialRateLimits, initialBlockedClients } from "../mock/mockData";
 
 let mockLimits = [...initialRateLimits];
@@ -9,7 +9,7 @@ export const rateLimitApi = {
     if (import.meta.env.VITE_USE_MOCK !== "false") {
       return { success: true, status: 200, code: "SUCCESS", data: mockLimits };
     }
-    return axiosClient.get("/gateway/rate-limits");
+    return apiClient.get("/gateway/rate-limits");
   },
 
   saveRateLimit: async (limitData) => {
@@ -31,14 +31,14 @@ export const rateLimitApi = {
       }
       return { success: true, status: 200, code: "SUCCESS", data: limitData };
     }
-    return axiosClient.post("/gateway/rate-limit", limitData);
+    return apiClient.post("/gateway/rate-limit", limitData);
   },
 
   getBlockedClients: async () => {
     if (import.meta.env.VITE_USE_MOCK !== "false") {
       return { success: true, status: 200, code: "SUCCESS", data: mockBlocked };
     }
-    return axiosClient.get("/gateway/block");
+    return apiClient.get("/gateway/block");
   },
 
   unblockClient: async (ip, routeId) => {
@@ -48,7 +48,7 @@ export const rateLimitApi = {
       );
       return { success: true, status: 200, code: "SUCCESS", data: null };
     }
-    return axiosClient.delete("/gateway/block", { data: { ip, routeId } });
+    return apiClient.delete("/gateway/block", { data: { ip, routeId } });
   },
 
   getActiveLimitOnRoute: async (routeId) => {
@@ -56,7 +56,9 @@ export const rateLimitApi = {
       const limit = mockLimits.find((l) => l.routeId === routeId);
       return { success: true, status: 200, code: "SUCCESS", data: limit };
     }
-    return axiosClient.get(`/gateway/${routeId}/rate-limit/active`);
+    return apiClient.get(
+      `/api/gateway/rate-limit-policies/${routeId}/rate-limit/active`,
+    );
   },
 
   disableLimitOnRoute: async (routeId) => {
@@ -65,7 +67,7 @@ export const rateLimitApi = {
       if (limit) limit.active = false;
       return { success: true, status: 200, code: "SUCCESS", data: null };
     }
-    return axiosClient.delete(`/gateway/${routeId}/rate-limit/active`);
+    return apiClient.delete(`/gateway/${routeId}/rate-limit/active`);
   },
 
   getLimitVersions: async (routeId) => {
@@ -105,6 +107,8 @@ export const rateLimitApi = {
         ],
       };
     }
-    return axiosClient.get(`/gateway/${routeId}/rate-limit/versions`);
+    return apiClient.get(
+      `/api/gateway/rate-limit-policies/${routeId}/versions`,
+    );
   },
 };

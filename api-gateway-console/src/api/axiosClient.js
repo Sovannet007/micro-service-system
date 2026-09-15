@@ -1,53 +1,193 @@
 import axios from "axios";
 
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== "false"; // Default to true for demo
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
-export const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
+// Main API client
+const axiosClient = axios.create({
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 10000,
 });
+
+// Separate client for refresh.
+// IMPORTANT: This client has NO auth/refresh interceptor.
+const refreshClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// =====================================================
+// REQUEST INTERCEPTOR
+// =====================================================
 
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const accessToken = localStorage.getItem("access_token");
+
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error),
 );
 
+// =====================================================
+// REFRESH STATE
+// =====================================================
+
+let isRefreshing = false;
+
+let refreshSubscribers = [];
+
+const subscribeTokenRefresh = (callback) => {
+  refreshSubscribers.push(callback);
+};
+
+const onRefreshed = (newToken) => {
+  refreshSubscribers.forEach((callback) => {
+    callback(newToken);
+  });
+
+  refreshSubscribers = [];
+};
+
+const onRefreshFailed = (error) => {
+  refreshSubscribers.forEach((callback) => {
+    callback(null, error);
+  });
+
+  refreshSubscribers = [];
+};
+
+// =====================================================
+// RESPONSE INTERCEPTOR
+// =====================================================
+
 axiosClient.interceptors.response.use(
   (response) => {
-    // Return backend standard wrapper payload (or response.data)
-    return response.data;
+    return response;
   },
-  (error) => {
-    if (error.response) {
-      const { status, data } = error.response;
-      if (status === 401) {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("user_info");
-        window.location.href = "/login?expired=true";
-      }
-      return Promise.reject(
-        data || {
-          success: false,
-          status,
-          code: status === 403 ? "FORBIDDEN" : "ERROR",
-          message: data?.message || "An unexpected server error occurred.",
-        },
-      );
+
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Not a 401
+    if (error.response?.status !== 401) {
+      return Promise.reject(error);
     }
-    return Promise.reject({
-      success: false,
-      status: 500,
-      code: "NETWORK_ERROR",
-      message: "Network error or Gateway unreachable.",
-    });
+
+    // Don't retry the same request forever
+    if (originalRequest?._retry) {
+      return Promise.reject(error);
+    }
+
+    originalRequest._retry = true;
+
+    const refreshToken = localStorage.getItem("refresh_token");
+
+    // No refresh token -> logout
+    if (!refreshToken) {
+      clearAuthentication();
+      return Promise.reject(error);
+    }
+
+    // =================================================
+    // Another request is already refreshing
+    // =================================================
+
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        subscribeTokenRefresh((newToken, refreshError) => {
+          if (refreshError || !newToken) {
+            reject(refreshError || error);
+            return;
+          }
+
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+          resolve(axiosClient(originalRequest));
+        });
+      });
+    }
+
+    // =================================================
+    // Start refresh
+    // =================================================
+
+    isRefreshing = true;
+
+    try {
+      console.log("[AUTH] Access token expired. Refreshing...");
+
+      const response = await refreshClient.post("/api/auth/refresh", {
+        refresh_token: refreshToken,
+      });
+
+      const result = response.data;
+
+      if (!result.success || !result.data?.access_token) {
+        throw new Error(result.message || "Token refresh failed");
+      }
+
+      const newAccessToken = result.data.access_token;
+
+      const newRefreshToken = result.data.refresh_token;
+
+      // =================================================
+      // Save new tokens
+      // =================================================
+
+      localStorage.setItem("access_token", newAccessToken);
+
+      if (newRefreshToken) {
+        localStorage.setItem("refresh_token", newRefreshToken);
+      }
+
+      // Update Authorization header
+      axiosClient.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+
+      console.log("[AUTH] Token refreshed successfully.");
+
+      // Tell waiting requests
+      onRefreshed(newAccessToken);
+
+      // Retry original request
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+      return axiosClient(originalRequest);
+    } catch (refreshError) {
+      console.error("[AUTH] Refresh token failed.", refreshError);
+
+      onRefreshFailed(refreshError);
+
+      clearAuthentication();
+
+      // Redirect to login
+      window.location.href = "/login";
+
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
   },
 );
+
+// =====================================================
+// CLEAR AUTHENTICATION
+// =====================================================
+
+function clearAuthentication() {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("user_info");
+
+  delete axiosClient.defaults.headers.common.Authorization;
+}
+
+export default axiosClient;

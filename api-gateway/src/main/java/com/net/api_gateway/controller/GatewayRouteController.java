@@ -42,19 +42,44 @@ public class GatewayRouteController {
     }
 
     @GetMapping("/{id}")
-    public Mono<GatewayRouteResponse> getById(@PathVariable Long id) {
-        return service.getById(id);
+    public Mono<ResponseEntity<ApiResponse<GatewayRouteResponse>>> getById(@PathVariable Long id, ServerWebExchange exchange) {
+        return service.getById(id)
+                .map(data ->
+                        apiResponseService.success(
+                                exchange,
+                                "Gateway route retrieved successfully.",
+                                data
+                        )
+                );
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.OK)
-    public Mono<GatewayRouteResponse> save(@RequestBody GatewayRouteRequest req) {
-        return req.id() == null ? service.create(req) : service.update(req.id(), req);
+    public Mono<ResponseEntity<ApiResponse<GatewayRouteResponse>>> save(@RequestBody GatewayRouteRequest req, ServerWebExchange exchange) {
+        Mono<GatewayRouteResponse> operation =
+                req.id() == null
+                        ? service.create(req)
+                        : service.update(req.id(), req);
+
+        return operation.map(data ->
+                apiResponseService.success(
+                        exchange,
+                        req.id() == null
+                                ? "Gateway route created successfully."
+                                : "Gateway route updated successfully.",
+                        data
+                )
+        );
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> delete(@PathVariable Long id) {
-        return service.delete(id);
+    public Mono<ResponseEntity<ApiResponse<Object>>> delete(@PathVariable Long id, ServerWebExchange exchange) {
+        return service.delete(id)
+                .thenReturn(
+                        apiResponseService.success(
+                                exchange,
+                                "Gateway route deleted successfully.",
+                                null
+                        )
+                );
     }
 }

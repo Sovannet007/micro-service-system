@@ -1,4 +1,4 @@
-import { axiosClient } from "./axiosClient";
+import apiClient from "./axiosClient";
 import { initialSessions } from "../mock/mockData";
 
 let mockSessions = [...initialSessions];
@@ -13,7 +13,7 @@ export const sessionApi = {
         data: mockSessions,
       };
     }
-    return axiosClient.get("/auth/session");
+    return apiClient.get("/auth/session");
   },
 
   revokeSession: async (sessionId) => {
@@ -21,7 +21,7 @@ export const sessionApi = {
       mockSessions = mockSessions.filter((s) => s.sessionId !== sessionId);
       return { success: true, status: 200, code: "SUCCESS", data: null };
     }
-    return axiosClient.delete(`/auth/session/${sessionId}`);
+    return apiClient.delete(`/auth/session/${sessionId}`);
   },
 
   logoutAll: async (userId) => {
@@ -29,6 +29,6 @@ export const sessionApi = {
       mockSessions = [];
       return { success: true, status: 200, code: "SUCCESS", data: null };
     }
-    return axiosClient.post(`/auth/logout-all/${userId}`);
+    return apiClient.post(`/auth/logout-all/${userId}`);
   },
 };

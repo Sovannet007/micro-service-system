@@ -1,58 +1,87 @@
 package com.net.api_gateway.controller;
 
+import com.net.api_gateway.dto.ApiResponse;
 import com.net.api_gateway.dto.GatewayRateLimitRuleRequest;
 import com.net.api_gateway.dto.GatewayRateLimitRuleResponse;
+import com.net.api_gateway.service.ApiResponseService;
 import com.net.api_gateway.service.GatewayRateLimitRuleService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/gateway/rate-limit-rules")
 @RequiredArgsConstructor
 public class GatewayRateLimitRuleController {
-
     private final GatewayRateLimitRuleService service;
+    private final ApiResponseService apiResponseService;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Mono<GatewayRateLimitRuleResponse> save(
-            @RequestBody GatewayRateLimitRuleRequest request) {
-
-        return service.save(request);
+    public Mono<ResponseEntity<ApiResponse<GatewayRateLimitRuleResponse>>> save(
+            @RequestBody GatewayRateLimitRuleRequest request,
+            ServerWebExchange exchange
+    ) {
+        return service.save(request)
+                .map(data ->
+                        apiResponseService.created(
+                                exchange,
+                                "Gateway rate limit rule created successfully.",
+                                data
+                        )
+                );
     }
 
     @GetMapping("/route/{gatewayRouteId}/active")
-    public Flux<GatewayRateLimitRuleResponse> getActiveRules(
-            @PathVariable Long gatewayRouteId) {
-
-        return service.getActiveRules(gatewayRouteId);
+    public Mono<ResponseEntity<ApiResponse<List<GatewayRateLimitRuleResponse>>>> getActiveRules(@PathVariable Long gatewayRouteId, ServerWebExchange exchange) {
+        return service.getActiveRules(gatewayRouteId)
+                .collectList()
+                .map(data ->
+                        apiResponseService.success(
+                                exchange,
+                                "Active gateway rate limit rules retrieved successfully.",
+                                data
+                        )
+                );
     }
 
     @GetMapping("/route/{gatewayRouteId}/history")
-    public Flux<GatewayRateLimitRuleResponse> getHistory(
+    public Mono<ResponseEntity<ApiResponse<List<GatewayRateLimitRuleResponse>>>> getHistory(
             @PathVariable Long gatewayRouteId,
             @RequestParam String pathPattern,
-            @RequestParam String httpMethod) {
-
+            @RequestParam String httpMethod,
+            ServerWebExchange exchange
+    ) {
         return service.getHistory(
-                gatewayRouteId,
-                pathPattern,
-                httpMethod
-        );
+                        gatewayRouteId,
+                        pathPattern,
+                        httpMethod
+                )
+                .collectList()
+                .map(data ->
+                        apiResponseService.success(
+                                exchange,
+                                "Gateway rate limit rule history retrieved successfully.",
+                                data
+                        )
+                );
     }
 
     @DeleteMapping("/{id}/active")
-    public Mono<ResponseEntity<Void>> disable(
-            @PathVariable Long id) {
-
-        return service
-                .disable(id)
+    public Mono<ResponseEntity<ApiResponse<Object>>> disable(
+            @PathVariable Long id,
+            ServerWebExchange exchange
+    ) {
+        return service.disable(id)
                 .thenReturn(
-                        ResponseEntity.noContent().build()
+                        apiResponseService.success(
+                                exchange,
+                                "Gateway rate limit rule disabled successfully.",
+                                null
+                        )
                 );
     }
 }

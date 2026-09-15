@@ -1,4 +1,4 @@
-import { axiosClient } from "./axiosClient";
+import apiClient from "./axiosClient";
 import { initialRoutes } from "../mock/mockData";
 
 let mockRoutes = [...initialRoutes];
@@ -8,7 +8,7 @@ export const routeApi = {
     if (import.meta.env.VITE_USE_MOCK !== "false") {
       return { success: true, status: 200, code: "SUCCESS", data: mockRoutes };
     }
-    return axiosClient.get("/gateway/routes");
+    return apiClient.get("/api/gateway/routes");
   },
 
   getRouteById: async (id) => {
@@ -16,7 +16,7 @@ export const routeApi = {
       const route = mockRoutes.find((r) => r.routeId === id);
       return { success: true, status: 200, code: "SUCCESS", data: route };
     }
-    return axiosClient.get(`/gateway/routes/${id}`);
+    return apiClient.get(`/api/gateway/routes/${id}`);
   },
 
   saveRoute: async (routeData) => {
@@ -30,7 +30,7 @@ export const routeApi = {
       }
       return { success: true, status: 200, code: "SUCCESS", data: routeData };
     }
-    return axiosClient.post("/gateway/routes", routeData);
+    return apiClient.post("/gateway/routes", routeData);
   },
 
   deleteRoute: async (routeId) => {
@@ -38,6 +38,6 @@ export const routeApi = {
       mockRoutes = mockRoutes.filter((r) => r.routeId !== routeId);
       return { success: true, status: 200, code: "SUCCESS", data: null };
     }
-    return axiosClient.post(`/gateway/routes/${routeId}/delete`);
+    return apiClient.post(`/gateway/routes/${routeId}/delete`);
   },
 };

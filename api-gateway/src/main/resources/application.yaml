@@ -6,7 +6,7 @@ spring:
     name: api-gateway
 
   r2dbc:
-    url: r2dbc:postgresql://localhost:54033/gateway_db
+    url: r2dbc:postgresql://localhost:5433/gateway_db
     username: postgres
     password: Admin@123456
 
